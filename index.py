@@ -103,6 +103,26 @@ def build_speechlet_response(title, s_output, c_output, should_end_session, repr
         "shouldEndSession": should_end_session
     }
 
+def build_speechlet_ssml_response(title, s_output, c_output, should_end_session, reprompt_text=""):
+    return {
+        "outputSpeech": {
+            "type": "SSML",
+            "ssml": s_output
+        },
+        "card": {
+            "type": "Simple",
+            "title": title,
+            "content": c_output
+        },
+        'reprompt': {
+            'outputSpeech': {
+                'type': 'PlainText',
+                'text': reprompt_text
+            }
+        },
+        "shouldEndSession": should_end_session
+    }
+    
 def build_response(session_attributes, speechlet_response):
     return {
         "version": "1.0",
@@ -136,18 +156,18 @@ def get_holiday(intent):
     should_end_session = True
     
     if len(holidays) == 0:
-        speech_output = "I don't know of any unofficial holidays on %s. " \
-                        "Time to make one up!" \
+        speech_output = "<speak>I don't know of any unofficial holidays on %s. " \
+                        "Time to make one up!</speak>" \
                         % get_spoken_date(date_stripped)
         card_output = "I don't know of any unofficial holidays on %d/%d. " \
                         "Time to make one up!" \
                         % (date_stripped.month, date_stripped.day) 
     else: 
         output_base = "You can celebrate %s on " % random.choice(holidays)
-        speech_output = output_base + get_spoken_date(date_stripped) + "!"
+        speech_output = "<speak>" + output_base + get_spoken_date(date_stripped) + "!</speak>"
         card_output = output_base + "%d/%d!" % (date_stripped.month, date_stripped.day)
 
-    return build_response(session_attributes, build_speechlet_response(
+    return build_response(session_attributes, build_speechlet_ssml_response(
         card_title, speech_output, card_output, should_end_session))
 
 def get_spoken_date(d):
@@ -192,5 +212,3 @@ def handle_session_end_request():
     should_end_session = True
 
     return build_response({}, build_speechlet_response(card_title, speech_output, None, should_end_session))
-
-
